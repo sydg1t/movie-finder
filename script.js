@@ -1,9 +1,31 @@
+const Movie = (props) => {
+  const {Title, Year, imdbID, Type, Poster} = props.movie;
+
+  return (
+    <div className="row">
+      <div className="col-4 col-md-3 mb-3">
+        <a href={`https://www.imdb.com/title/${imdbID}/`} target="_blank">
+          <img src={Poster} className="img-fluid" /> 
+        </a>
+      </div>
+      <div className="col-8 col-md-9 mb-3">
+        <a href={`https://www.imdb.como/title/${imdbID}/`} target="_blank">
+          <h4>{Title}</h4>
+          <p>{Type} | {Year}</p>
+        </a>
+      </div>
+    </div>
+  )
+}
+
+
 class MovieFinder extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       searchTerm: '',
       results: [],
+      error: '',
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -13,6 +35,7 @@ class MovieFinder extends React.Component {
 
   handleChange(event) {
     this.setState({ searchTerm: event.target.value });
+    
   }
 
 
@@ -24,21 +47,33 @@ class MovieFinder extends React.Component {
       return;
     }
 
-    fetch('http://www.omdbapi.com/?s=${searchTerm}&apikey=fbf0fda').then((response) => {
+    const checkStatus = (response) => {
       if (response.ok) {
-        return response.json();
+        return response;
       }
       throw new Error('Request was either a 404 or 500');
-    }).then((data) => {
-      console.log(data);
+    }
+
+    const json = (response) => response.json();
+
+    fetch(`http://www.omdbapi.com/?s=${searchTerm}&apikey=c5339e0f`).then(checkStatus).then(json).then((data) => {
+      if (data.Response === 'False') {
+        throw new Error(data.Error);
+      }
+
+      if (data.Response === 'True' && data.Search) {
+        this.setState({results: data.Search, error: ''});
+      }
+      
     }).catch((error) => {
+      this.setState({error: error.message});
       console.log(error);
     })
   }
 
 
   render() {
-    const {searchTerm, results} = this.state;
+    const {searchTerm, results, error} = this.state;
 
     return (
       <div className="container">
@@ -54,9 +89,15 @@ class MovieFinder extends React.Component {
               />
               <button type="submit" className="btn btn-primary">Submit</button>
             </form>
-            {results.map((movie) => {
-              return null;
-            })}
+            {(() => {
+            if (error) {
+              return error;
+            }
+            return results.map((movie) => {
+              return <Movie key={movie.imdbID} movie={movie} />
+            })
+          })()}
+            
           </div>
         </div>
       </div>
