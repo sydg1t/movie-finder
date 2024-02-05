@@ -56,7 +56,7 @@ class MovieFinder extends React.Component {
 
     const json = (response) => response.json();
 
-    fetch(`http://www.omdbapi.com/?s=${searchTerm}&apikey=c5339e0f`).then(checkStatus).then(json).then((data) => {
+    fetch(`https://www.omdbapi.com/?s=${searchTerm}&apikey=c5339e0f`).then(checkStatus).then(json).then((data) => {
       if (data.Response === 'False') {
         throw new Error(data.Error);
       }
